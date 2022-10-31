@@ -58,7 +58,7 @@
             this.LoadFilebtn.BackColor = System.Drawing.Color.Fuchsia;
             this.LoadFilebtn.Font = new System.Drawing.Font("Arial", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LoadFilebtn.ForeColor = System.Drawing.Color.AliceBlue;
-            this.LoadFilebtn.Location = new System.Drawing.Point(185, 70);
+            this.LoadFilebtn.Location = new System.Drawing.Point(249, 70);
             this.LoadFilebtn.Name = "LoadFilebtn";
             this.LoadFilebtn.Size = new System.Drawing.Size(242, 39);
             this.LoadFilebtn.TabIndex = 2;
@@ -71,7 +71,7 @@
             this.DoneLoadingbtn.BackColor = System.Drawing.Color.Fuchsia;
             this.DoneLoadingbtn.Font = new System.Drawing.Font("Arial", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DoneLoadingbtn.ForeColor = System.Drawing.Color.AliceBlue;
-            this.DoneLoadingbtn.Location = new System.Drawing.Point(492, 70);
+            this.DoneLoadingbtn.Location = new System.Drawing.Point(671, 70);
             this.DoneLoadingbtn.Name = "DoneLoadingbtn";
             this.DoneLoadingbtn.Size = new System.Drawing.Size(102, 39);
             this.DoneLoadingbtn.TabIndex = 3;

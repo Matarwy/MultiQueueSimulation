@@ -11,8 +11,11 @@ namespace MultiQueueModels
         public Server()
         {
             this.TimeDistribution = new List<TimeDistribution>();
+            this.IsBeasy = false;
+            this.TotalWorkingTime = 0;
         }
 
+        public Boolean IsBeasy { get; set; }
         public int ID { get; set; }
         public decimal IdleProbability { get; set; }
         public decimal AverageServiceTime { get; set; } 

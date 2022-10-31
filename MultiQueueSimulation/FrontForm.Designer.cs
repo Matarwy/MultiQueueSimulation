@@ -32,6 +32,7 @@
             this.loadDataFilebtn = new System.Windows.Forms.Button();
             this.sysPerformancebtn = new System.Windows.Forms.Button();
             this.serversChartsbtn = new System.Windows.Forms.Button();
+            this.Simulationbtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.simulationGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -87,11 +88,25 @@
             this.serversChartsbtn.UseVisualStyleBackColor = false;
             this.serversChartsbtn.Click += new System.EventHandler(this.serversChartsbtn_Click);
             // 
+            // Simulationbtn
+            // 
+            this.Simulationbtn.BackColor = System.Drawing.Color.Beige;
+            this.Simulationbtn.Font = new System.Drawing.Font("Arial", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Simulationbtn.ForeColor = System.Drawing.Color.Chocolate;
+            this.Simulationbtn.Location = new System.Drawing.Point(0, 309);
+            this.Simulationbtn.Name = "Simulationbtn";
+            this.Simulationbtn.Size = new System.Drawing.Size(190, 60);
+            this.Simulationbtn.TabIndex = 5;
+            this.Simulationbtn.Text = "Simulation";
+            this.Simulationbtn.UseVisualStyleBackColor = false;
+            this.Simulationbtn.Click += new System.EventHandler(this.Simulationbtn_Click);
+            // 
             // FrontForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1182, 553);
+            this.Controls.Add(this.Simulationbtn);
             this.Controls.Add(this.serversChartsbtn);
             this.Controls.Add(this.sysPerformancebtn);
             this.Controls.Add(this.loadDataFilebtn);
@@ -110,6 +125,7 @@
         private System.Windows.Forms.Button loadDataFilebtn;
         private System.Windows.Forms.Button sysPerformancebtn;
         private System.Windows.Forms.Button serversChartsbtn;
+        private System.Windows.Forms.Button Simulationbtn;
     }
 }
 

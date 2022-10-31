@@ -51,7 +51,7 @@ namespace MultiQueueSimulation
 
         private void LoadDataFileForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            FrontForm.sysmethods.ReadFile(FrontForm.FilePath);
+
         }
 
         private void DoneLoadingbtn_Click(object sender, EventArgs e)

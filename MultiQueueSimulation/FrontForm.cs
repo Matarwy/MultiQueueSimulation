@@ -16,16 +16,18 @@ namespace MultiQueueSimulation
     {
         public static SimulationSystemMethods sysmethods;
         public static string FilePath { get; set; }
+        DataTable dt;
+
         public FrontForm()
         {
             InitializeComponent();
             sysmethods = new SimulationSystemMethods();
+            dt = new DataTable();
             FilePath = null;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            DataTable dt = new DataTable();
             dt.Columns.Add("Customer Number");
             dt.Columns.Add("Random Interarrival");
             dt.Columns.Add("Inter Arrival");
@@ -36,8 +38,6 @@ namespace MultiQueueSimulation
             dt.Columns.Add("Service Time");
             dt.Columns.Add("End Time");
             dt.Columns.Add("Time in Queue");
-
-            simulationGridView.DataSource = dt;
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -53,11 +53,7 @@ namespace MultiQueueSimulation
 
         private void serversChartsbtn_Click(object sender, EventArgs e)
         {
-            Server a = new Server();
-            Server b = new Server();
-            sysmethods.simulationSystem.Servers.Add(a);
-            sysmethods.simulationSystem.Servers.Add(b);
-            for (int i=0;i< sysmethods.simulationSystem.Servers.Count; i++)
+            for (int i=0;i< sysmethods.simulationSystem.NumberOfServers; i++)
             {
                 ServerChartForm serverchart = new ServerChartForm();
                 serverchart.Show();
@@ -68,6 +64,34 @@ namespace MultiQueueSimulation
         {
             PerformanceForm spf = new PerformanceForm();
             spf.Show();
+        }
+
+        private void Simulationbtn_Click(object sender, EventArgs e)
+        {
+            dt.Rows.Clear();
+
+            if (FilePath != null)
+            {
+                sysmethods.ReadFile(FilePath);
+                sysmethods.Simulateion();
+            }
+
+            for (int i = 0; i < sysmethods.simulationSystem.SimulationTable.Count; i++)
+            {
+                dt.Rows.Add(
+                    sysmethods.simulationSystem.SimulationTable[i].CustomerNumber,
+                    sysmethods.simulationSystem.SimulationTable[i].RandomInterArrival,
+                    sysmethods.simulationSystem.SimulationTable[i].InterArrival,
+                    sysmethods.simulationSystem.SimulationTable[i].ArrivalTime,
+                    sysmethods.simulationSystem.SimulationTable[i].RandomService,
+                    sysmethods.simulationSystem.SimulationTable[i].AssignedServer.ID,
+                    sysmethods.simulationSystem.SimulationTable[i].StartTime,
+                    sysmethods.simulationSystem.SimulationTable[i].ServiceTime,
+                    sysmethods.simulationSystem.SimulationTable[i].EndTime,
+                    sysmethods.simulationSystem.SimulationTable[i].TimeInQueue);
+            }
+
+            simulationGridView.DataSource = dt;
         }
     }
 }
