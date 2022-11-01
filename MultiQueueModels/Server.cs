@@ -13,6 +13,7 @@ namespace MultiQueueModels
             this.TimeDistribution = new List<TimeDistribution>();
             this.IsBeasy = false;
             this.TotalWorkingTime = 0;
+            this.TotalIdleTime = 0;
         }
 
         public Boolean IsBeasy { get; set; }
@@ -26,5 +27,6 @@ namespace MultiQueueModels
         //optional if needed use them
         public int FinishTime { get; set; }
         public int TotalWorkingTime { get; set; }
+        public int TotalIdleTime { get; set; }
     }
 }
