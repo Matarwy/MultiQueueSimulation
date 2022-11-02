@@ -15,6 +15,7 @@ namespace MultiQueueSimulation
     public partial class FrontForm : Form
     {
         public static SimulationSystemMethods sysmethods;
+        
         public static string FilePath { get; set; }
         DataTable dt;
 
@@ -55,7 +56,7 @@ namespace MultiQueueSimulation
         {
             for (int i=0;i< sysmethods.simulationSystem.NumberOfServers; i++)
             {
-                ServerChartForm serverchart = new ServerChartForm();
+                ServerChartForm serverchart = new ServerChartForm(sysmethods.simulationSystem.Servers[i]);
                 serverchart.Show();
             }
         }
@@ -74,6 +75,8 @@ namespace MultiQueueSimulation
             {
                 sysmethods.ReadFile(FilePath);
                 sysmethods.Simulateion();
+                string result = TestingManager.Test(sysmethods.simulationSystem, Constants.FileNames.TestCase1);
+                MessageBox.Show(result);
             }
 
             for (int i = 0; i < sysmethods.simulationSystem.SimulationTable.Count; i++)

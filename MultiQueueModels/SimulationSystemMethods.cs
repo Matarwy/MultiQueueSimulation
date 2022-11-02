@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+
 namespace MultiQueueModels
 {
     public class SimulationSystemMethods
@@ -29,8 +30,11 @@ namespace MultiQueueModels
 
             //Calculate Performance for systems and per Server
             Performance();
-            for (int i = 1; i < simulationSystem.NumberOfServers; i++)
-                ServerPerformance(simulationSystem.Servers[i]);
+            decimal TotalRunTime= 0;
+            for (int i = 0; i < simulationSystem.NumberOfServers; i++)
+                TotalRunTime = Math.Max(TotalRunTime, simulationSystem.Servers[i].FinishTime);
+            for (int i = 0; i < simulationSystem.NumberOfServers; i++)
+                ServerPerformance(TotalRunTime,simulationSystem.Servers[i]);
         }
 
         //Fill Simulation Table
@@ -43,7 +47,6 @@ namespace MultiQueueModels
             simulationCaseTemp.InterArrival = 0;
             simulationCaseTemp.ArrivalTime = 0;
             simulationCaseTemp.RandomService = random.Next(1, 101);
-            simulationCaseTemp.ServiceTime = GetServiceTime(simulationCaseTemp.RandomService, simulationCaseTemp.AssignedServer);
             
             //Assigning Server For First Row
             if (simulationSystem.SelectionMethod == Enums.SelectionMethod.HighestPriority)
@@ -58,8 +61,8 @@ namespace MultiQueueModels
 
                 simulationCaseTemp.AssignedServer = simulationSystem.Servers[Highestpriorityindex];
                 simulationCaseTemp.StartTime = simulationCaseTemp.ArrivalTime;
+                simulationCaseTemp.ServiceTime = GetServiceTime(simulationCaseTemp.RandomService, simulationCaseTemp.AssignedServer);
                 simulationCaseTemp.EndTime = simulationCaseTemp.StartTime + simulationCaseTemp.ServiceTime;
-                simulationSystem.Servers[Highestpriorityindex].IsBeasy = true;
                 simulationSystem.Servers[Highestpriorityindex].FinishTime = simulationCaseTemp.EndTime;
                 simulationSystem.Servers[Highestpriorityindex].TotalWorkingTime = simulationCaseTemp.EndTime - simulationSystem.Servers[Highestpriorityindex].TotalIdleTime;
             }
@@ -69,8 +72,8 @@ namespace MultiQueueModels
 
                 simulationCaseTemp.AssignedServer = simulationSystem.Servers[randomServer];
                 simulationCaseTemp.StartTime = simulationCaseTemp.ArrivalTime;
+                simulationCaseTemp.ServiceTime = GetServiceTime(simulationCaseTemp.RandomService, simulationCaseTemp.AssignedServer);
                 simulationCaseTemp.EndTime = simulationCaseTemp.StartTime + simulationCaseTemp.ServiceTime;
-                simulationSystem.Servers[randomServer].IsBeasy = true;
                 simulationSystem.Servers[randomServer].FinishTime = simulationCaseTemp.EndTime;
                 simulationSystem.Servers[randomServer].TotalWorkingTime = simulationCaseTemp.EndTime - simulationSystem.Servers[randomServer].TotalIdleTime;
             }
@@ -78,13 +81,13 @@ namespace MultiQueueModels
             {
                 simulationCaseTemp.AssignedServer = simulationSystem.Servers[0];
                 simulationCaseTemp.StartTime = simulationCaseTemp.ArrivalTime;
+                simulationCaseTemp.ServiceTime = GetServiceTime(simulationCaseTemp.RandomService, simulationCaseTemp.AssignedServer);
                 simulationCaseTemp.EndTime = simulationCaseTemp.StartTime + simulationCaseTemp.ServiceTime;
-                simulationSystem.Servers[0].IsBeasy = true;
                 simulationSystem.Servers[0].FinishTime = simulationCaseTemp.EndTime;
                 simulationSystem.Servers[0].TotalWorkingTime = simulationCaseTemp.EndTime;
                 simulationSystem.Servers[0].Utilization = simulationSystem.Servers[0].TotalWorkingTime / simulationCaseTemp.EndTime;
             }
-
+            
             simulationCaseTemp.TimeInQueue = 0;
             simulationSystem.SimulationTable.Add(simulationCaseTemp);
         }
@@ -99,20 +102,66 @@ namespace MultiQueueModels
                 simulationCaseTemp.CustomerNumber = i + 1;
                 simulationCaseTemp.RandomInterArrival = random.Next(1, 101);
                 simulationCaseTemp.RandomService = random.Next(1, 101);
-                simulationCaseTemp.InterArrival = GetIntrArrivalTime(simulationCaseTemp.RandomService, simulationSystem); ;
+                simulationCaseTemp.InterArrival = GetIntrArrivalTime(simulationCaseTemp.RandomInterArrival, simulationSystem.InterarrivalDistribution);
                 simulationCaseTemp.ArrivalTime = simulationCaseTemp.InterArrival + simulationSystem.SimulationTable[i - 1].ArrivalTime;
-                simulationCaseTemp.ServiceTime = GetServiceTime(simulationCaseTemp.RandomService, simulationCaseTemp.AssignedServer);
-                AssigningServer(simulationCaseTemp, queue);
-                DepartureEvent();
-
                 simulationSystem.SimulationTable.Add(simulationCaseTemp);
+            }
+
+            SimulationCase simulationCase;
+            for (int i = 1; i < simulationSystem.StoppingNumber; i++)
+            {
+                int nextindex = i + 1;
+                simulationCase = DepartureEvent(nextindex, queue);
+                if (simulationCase != null)
+                {
+                    if(simulationCase.StartTime >= simulationSystem.SimulationTable[i].StartTime)
+                    {
+                        AssigningServer(simulationSystem.SimulationTable[i], queue);
+                    }
+                    else
+                    {
+                        AssigningServer(simulationCase, queue);
+                    }
+                }
+                else
+                {
+                    AssigningServer(simulationSystem.SimulationTable[i], queue);
+                }
+                
             }
         }
 
         //Departure Event
-        public void DepartureEvent()
+        public SimulationCase DepartureEvent(int nextIndex, Queue<SimulationCase> queue)
         {
-
+            int MinFinishTimeServerIndex = FindMinFinishTime(simulationSystem.Servers);
+            if(queue.Count > 0)
+            {
+                SimulationCase simulationCase = queue.Dequeue();
+                int Highestpriority = 0;
+                for (int j = 0; j < simulationSystem.NumberOfServers; j++)
+                {
+                    if ((simulationSystem.Servers[j].FinishTime <= (simulationCase.ArrivalTime + simulationCase.TimeInQueue)) && (queue.Count == 0))
+                    {
+                        Highestpriority = j;
+                        break;
+                    }
+                }
+                simulationCase.AssignedServer = simulationSystem.Servers[Highestpriority];
+                simulationCase.ServiceTime = GetServiceTime(simulationCase.RandomService, simulationCase.AssignedServer);
+                simulationCase.EndTime = simulationCase.StartTime + simulationCase.ServiceTime;
+                return simulationCase;
+            }
+            else
+            {
+                if(nextIndex < simulationSystem.SimulationTable.Count)
+                {
+                    if(simulationSystem.SimulationTable[nextIndex].ArrivalTime > simulationSystem.Servers[MinFinishTimeServerIndex].FinishTime)
+                        simulationSystem.Servers[MinFinishTimeServerIndex].TotalIdleTime = simulationSystem.SimulationTable[nextIndex].ArrivalTime - simulationSystem.Servers[MinFinishTimeServerIndex].FinishTime;
+                }
+                    
+                return null;
+            }
         }
 
         //New Arrivall Event
@@ -131,46 +180,32 @@ namespace MultiQueueModels
         public void HighestPriorityAssigingServer(SimulationCase simulationCase, Queue<SimulationCase> queue)
         {
             int Highestpriority = 0;
-            int Highestpriorityindex = 0;
             bool AllServerBeasy = true;
-
             for (int j = 0; j < simulationSystem.NumberOfServers; j++)
             {
-                if (!simulationSystem.Servers[j].IsBeasy)
+                if ((simulationSystem.Servers[j].FinishTime <= (simulationCase.ArrivalTime + simulationCase.TimeInQueue)) && (queue.Count == 0))
                 {
-                    Highestpriorityindex = j;
-                    Highestpriority = simulationSystem.Servers[j].ID;
+                    Highestpriority = j;
+                    AllServerBeasy = false;
                     break;
                 }
-            }
-
-            for (int j = 0; j < simulationSystem.NumberOfServers; j++)
-            {
-                if ((!simulationSystem.Servers[j].IsBeasy) && (simulationSystem.Servers[j].ID <= Highestpriority))
-                {
-                    Highestpriority = simulationSystem.Servers[j].ID;
-                    Highestpriorityindex = j;
-                    AllServerBeasy = false;
-                } 
             }
 
             if (AllServerBeasy)
             {
                 queue.Enqueue(simulationCase);
-                simulationCase.StartTime = FindStartTime(queue);
-                simulationCase.TimeInQueue = simulationCase.StartTime - simulationCase.ArrivalTime;
+                simulationCase.TimeInQueue += FindTimeInQueue(queue);
+                simulationCase.StartTime = simulationCase.TimeInQueue + simulationCase.ArrivalTime;
                 simulationSystem.PerformanceMeasures.MaxQueueLength = Math.Max(simulationSystem.PerformanceMeasures.MaxQueueLength, queue.Count);
-                
             }
             else
             {
-                simulationCase.AssignedServer = simulationSystem.Servers[Highestpriorityindex];
-                simulationCase.StartTime = simulationCase.ArrivalTime;
+                simulationCase.AssignedServer = simulationSystem.Servers[Highestpriority];
+                simulationCase.StartTime = simulationCase.ArrivalTime + simulationCase.TimeInQueue;
+                simulationCase.ServiceTime = GetServiceTime(simulationCase.RandomService, simulationCase.AssignedServer);
                 simulationCase.EndTime = simulationCase.StartTime + simulationCase.ServiceTime;
-                simulationCase.TimeInQueue = 0;
-                simulationSystem.Servers[Highestpriorityindex].IsBeasy = true;
-                simulationSystem.Servers[Highestpriorityindex].FinishTime = simulationCase.EndTime;
-                simulationSystem.Servers[Highestpriorityindex].TotalWorkingTime = simulationCase.EndTime - simulationSystem.Servers[Highestpriorityindex].TotalIdleTime;
+                simulationSystem.Servers[Highestpriority].FinishTime = simulationCase.EndTime;
+                simulationSystem.Servers[Highestpriority].TotalWorkingTime = simulationCase.EndTime - simulationSystem.Servers[Highestpriority].TotalIdleTime;
             }
         }
 
@@ -179,20 +214,18 @@ namespace MultiQueueModels
             int randomServer = random.Next(0, simulationSystem.Servers.Count);
             bool AllServerBeasy = true;
 
-            for (int j = 0; j < simulationSystem.NumberOfServers; j++)
+            while ((simulationSystem.Servers[randomServer].FinishTime <= (simulationCase.ArrivalTime + simulationCase.TimeInQueue)) && (queue.Count == 0))
             {
-                if (!simulationSystem.Servers[j].IsBeasy)
-                    AllServerBeasy = false;
-            }
-
-            while ((!simulationSystem.Servers[randomServer].IsBeasy) && (!AllServerBeasy));
                 randomServer = random.Next(0, simulationSystem.Servers.Count);
+                AllServerBeasy = false;
+            }
+                
 
             if (AllServerBeasy)
             {
                 queue.Enqueue(simulationCase);
-                simulationCase.StartTime = FindStartTime(queue);
-                simulationCase.TimeInQueue = simulationCase.StartTime - simulationCase.ArrivalTime;
+                simulationCase.TimeInQueue = FindTimeInQueue(queue);
+                simulationCase.StartTime = simulationCase.TimeInQueue + simulationCase.ArrivalTime;
                 simulationSystem.PerformanceMeasures.MaxQueueLength = Math.Max(simulationSystem.PerformanceMeasures.MaxQueueLength, queue.Count);
             }
             else
@@ -201,7 +234,6 @@ namespace MultiQueueModels
                 simulationCase.StartTime = simulationCase.ArrivalTime;
                 simulationCase.EndTime = simulationCase.StartTime + simulationCase.ServiceTime;
                 simulationCase.TimeInQueue = 0;
-                simulationSystem.Servers[randomServer].IsBeasy = true;
                 simulationSystem.Servers[randomServer].FinishTime = simulationCase.EndTime;
                 simulationSystem.Servers[randomServer].TotalWorkingTime = simulationCase.EndTime - simulationSystem.Servers[randomServer].TotalIdleTime;
             }
@@ -216,20 +248,10 @@ namespace MultiQueueModels
 
             for (int j = 0; j < simulationSystem.NumberOfServers; j++)
             {
-                if (!simulationSystem.Servers[j].IsBeasy)
+                if ((simulationSystem.Servers[j].FinishTime <= (simulationCase.ArrivalTime + simulationCase.TimeInQueue)) && (queue.Count == 0) && (simulationSystem.Servers[j].Utilization <= LeastUtilization))
                 {
                     LeastUtilizationServer = j;
                     LeastUtilization = simulationSystem.Servers[j].Utilization;
-                    break;
-                }
-            }
-
-            for (int j = 0; j < simulationSystem.NumberOfServers; j++)
-            {
-                if ((!simulationSystem.Servers[j].IsBeasy) && (simulationSystem.Servers[j].Utilization <= LeastUtilization))
-                {
-                    LeastUtilization = simulationSystem.Servers[j].Utilization;
-                    LeastUtilizationServer = j;
                     AllServerBeasy = false;
                 }
             }
@@ -237,8 +259,8 @@ namespace MultiQueueModels
             if (AllServerBeasy)
             {
                 queue.Enqueue(simulationCase);
-                simulationCase.StartTime = FindStartTime(queue);
-                simulationCase.TimeInQueue = simulationCase.StartTime - simulationCase.ArrivalTime;  
+                simulationCase.TimeInQueue = FindTimeInQueue(queue);
+                simulationCase.StartTime = simulationCase.TimeInQueue + simulationCase.ArrivalTime;
                 simulationSystem.PerformanceMeasures.MaxQueueLength = Math.Max(simulationSystem.PerformanceMeasures.MaxQueueLength, queue.Count);
             }
             else
@@ -247,7 +269,6 @@ namespace MultiQueueModels
                 simulationCase.StartTime = simulationCase.ArrivalTime;
                 simulationCase.EndTime = simulationCase.StartTime + simulationCase.ServiceTime;
                 simulationCase.TimeInQueue = 0;
-                simulationSystem.Servers[LeastUtilizationServer].IsBeasy = true;
                 simulationSystem.Servers[LeastUtilizationServer].FinishTime = simulationCase.EndTime;
                 simulationSystem.Servers[LeastUtilizationServer].TotalWorkingTime = simulationCase.EndTime - simulationSystem.Servers[LeastUtilizationServer].TotalIdleTime;
                 int simulatuinTotalTime = simulationCase.EndTime;
@@ -261,38 +282,60 @@ namespace MultiQueueModels
 
         }
 
-        public int FindStartTime(Queue<SimulationCase> queue)
+        public int FindTimeInQueue(Queue<SimulationCase> queue)
         {
-            int minFinishTime = simulationSystem.Servers[0].FinishTime;
-            List<Server> TempServers = simulationSystem.Servers;
-            for (int k = 0; k < (queue.Count - 1); k++)
+            int MinFinishIndex = FindMinFinishTime(simulationSystem.Servers);
+            int TotalWaitingTime;
+
+            if (simulationSystem.Servers[MinFinishIndex].FinishTime > queue.ElementAt(queue.Count - 1).ArrivalTime)
+                TotalWaitingTime = simulationSystem.Servers[MinFinishIndex].FinishTime - queue.ElementAt(queue.Count - 1).ArrivalTime;
+            else
+                TotalWaitingTime = 0;
+
+            return TotalWaitingTime;
+        }
+
+        public int FindMinFinishTime(List<Server> servers)
+        {
+            int minFinishTime = servers[0].FinishTime;
+            int minFinishTimeindex = 0;
+            for (int j = 0; j < servers.Count; j++)
             {
-                int minFinishTimeindex = 0;
-                for (int j = 0; j < TempServers.Count; j++)
+                if (minFinishTime < servers[j].FinishTime)
                 {
-                    if (minFinishTime <= TempServers[j].FinishTime)
-                    {
-                        minFinishTimeindex = j;
-                        minFinishTime = TempServers[j].FinishTime;
-                    }
+                    minFinishTimeindex = j;
+                    minFinishTime = servers[j].FinishTime;
                 }
-                TempServers[minFinishTimeindex].FinishTime += simulationSystem.SimulationTable[queue.ElementAt(k).CustomerNumber - 1].ServiceTime;
             }
-            return minFinishTime;
+            return (minFinishTimeindex);
         }
 
         //InterArrival Time Distrbution Table Mathods
         public void IntrArrivalTimeTable()
         {
-
+            Decimal TotalCalcProp = 0;
+            for (int i = 0; i < simulationSystem.InterarrivalDistribution.Count; i++)
+            {
+                TotalCalcProp += simulationSystem.InterarrivalDistribution[i].Probability;
+                simulationSystem.InterarrivalDistribution[i].CummProbability = TotalCalcProp;
+                Console.WriteLine(simulationSystem.InterarrivalDistribution[i].CummProbability);
+                simulationSystem.InterarrivalDistribution[i].MaxRange = Convert.ToInt32(simulationSystem.InterarrivalDistribution[i].CummProbability * 100);
+                if (i == 0)
+                    simulationSystem.InterarrivalDistribution[i].MinRange = 1;
+                else
+                {
+                    int lastindex = i-1;
+                    simulationSystem.InterarrivalDistribution[i].MinRange = Convert.ToInt32((simulationSystem.InterarrivalDistribution[lastindex].CummProbability * 100) + 1);
+                }
+            }
         }
 
-        public int GetIntrArrivalTime(int RandomDigit, SimulationSystem Systeminter)
+        public int GetIntrArrivalTime(int RandomDigit, List<TimeDistribution> Systeminter)
         {
-            for (int i = 0; i < Systeminter.InterarrivalDistribution.Count; i++)
+            for (int i = 0; i < Systeminter.Count; i++)
             {
-                if (RandomDigit <= Systeminter.InterarrivalDistribution[i].MaxRange && RandomDigit >= Systeminter.InterarrivalDistribution[i].MinRange)
-                    return Systeminter.InterarrivalDistribution[i].Time;
+                if ((RandomDigit <= Systeminter[i].MaxRange) && (RandomDigit >= Systeminter[i].MinRange))
+                    return Systeminter[i].Time;
             }
             return 0;
         }
@@ -300,7 +343,23 @@ namespace MultiQueueModels
         //Service Time Distrbution Table Mathods
         public void ServiceTimeTable()
         {
-
+            for(int i = 0; i < simulationSystem.Servers.Count; i++)
+            {
+                Decimal TotalCalcProp = 0;
+                for (int j = 0; j < simulationSystem.Servers[i].TimeDistribution.Count; j++)
+                {
+                    TotalCalcProp += simulationSystem.Servers[i].TimeDistribution[j].Probability;
+                    simulationSystem.Servers[i].TimeDistribution[j].CummProbability = TotalCalcProp;
+                    simulationSystem.Servers[i].TimeDistribution[j].MaxRange = Convert.ToInt32(simulationSystem.Servers[i].TimeDistribution[j].CummProbability * 100);
+                    if (j == 0)
+                        simulationSystem.Servers[i].TimeDistribution[j].MinRange = 1;
+                    else
+                    {
+                        int lastindex = j - 1;
+                        simulationSystem.Servers[i].TimeDistribution[j].MinRange = Convert.ToInt32((simulationSystem.Servers[i].TimeDistribution[lastindex].CummProbability * 100) + 1);
+                    }
+                }
+            }
         }
 
         public int GetServiceTime(int RandomDigt, Server AssignedServer)
@@ -316,12 +375,30 @@ namespace MultiQueueModels
         // Calculate performance per server and for system
         public void Performance()
         {
-
+            decimal TotalWaitedTime =0;
+            decimal WaitedCustomerCounter =0;
+            for(int i=0; i < simulationSystem.SimulationTable.Count; i++)
+            {
+                TotalWaitedTime += (decimal)simulationSystem.SimulationTable[i].TimeInQueue;
+                if (simulationSystem.SimulationTable[i].TimeInQueue > 0)
+                    WaitedCustomerCounter++;
+            }
+            simulationSystem.PerformanceMeasures.AverageWaitingTime = TotalWaitedTime / simulationSystem.SimulationTable.Count;
+            simulationSystem.PerformanceMeasures.WaitingProbability = WaitedCustomerCounter / simulationSystem.SimulationTable.Count;
         }
 
-        public void ServerPerformance(Server server)
+        public void ServerPerformance(decimal TotalRunTime,Server server)
         {
+            decimal customersofServer = 0;
+            for(int i=0;i < simulationSystem.SimulationTable.Count; i++)
+            {
+                if(simulationSystem.SimulationTable[i].AssignedServer.ID == server.ID)
+                    customersofServer++;
+            }
 
+            server.IdleProbability = Convert.ToDecimal(server.TotalIdleTime) / TotalRunTime;
+            server.AverageServiceTime = Convert.ToDecimal(server.TotalWorkingTime) / customersofServer;
+            server.Utilization = Convert.ToDecimal(server.TotalWorkingTime) / TotalRunTime;
         }
 
         // fill system object with data in file
