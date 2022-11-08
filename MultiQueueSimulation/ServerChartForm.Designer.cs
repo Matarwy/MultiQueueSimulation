@@ -38,6 +38,8 @@
             this.UtiTextBox = new System.Windows.Forms.TextBox();
             this.ASTextBox = new System.Windows.Forms.TextBox();
             this.ServerBeasyChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.ServerIdtextbox = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.ServerBeasyChart)).BeginInit();
             this.SuspendLayout();
             // 
@@ -121,11 +123,34 @@
             this.ServerBeasyChart.TabIndex = 7;
             this.ServerBeasyChart.Text = "ServerBeasyShart";
             // 
+            // ServerIdtextbox
+            // 
+            this.ServerIdtextbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(224)))), ((int)(((byte)(192)))));
+            this.ServerIdtextbox.Location = new System.Drawing.Point(520, 42);
+            this.ServerIdtextbox.Multiline = true;
+            this.ServerIdtextbox.Name = "ServerIdtextbox";
+            this.ServerIdtextbox.ReadOnly = true;
+            this.ServerIdtextbox.Size = new System.Drawing.Size(53, 22);
+            this.ServerIdtextbox.TabIndex = 9;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Arial Narrow", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
+            this.label1.Location = new System.Drawing.Point(435, 44);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(79, 22);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Server ID:";
+            // 
             // ServerChartForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.ServerIdtextbox);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.ServerBeasyChart);
             this.Controls.Add(this.ASTextBox);
             this.Controls.Add(this.UtiTextBox);
@@ -151,5 +176,7 @@
         private System.Windows.Forms.TextBox UtiTextBox;
         private System.Windows.Forms.TextBox ASTextBox;
         private System.Windows.Forms.DataVisualization.Charting.Chart ServerBeasyChart;
+        private System.Windows.Forms.TextBox ServerIdtextbox;
+        private System.Windows.Forms.Label label1;
     }
 }

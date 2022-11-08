@@ -29,18 +29,18 @@ namespace MultiQueueSimulation
                 IDtextbox.Text = server.IdleProbability.ToString();
                 ASTextBox.Text = server.AverageServiceTime.ToString();
                 UtiTextBox.Text = server.Utilization.ToString();
+                ServerIdtextbox.Text = server.ID.ToString();
             }
             else
             {
                 IDtextbox.Text = "No Data";
                 ASTextBox.Text = "No Data";
                 UtiTextBox.Text = "No Data";
+                ServerIdtextbox.Text = "No Data";
             }
 
-            int[] X = new int[FrontForm.sysmethods.simulationSystem.SimulationTable.Count];
-            int[] Y = new int[FrontForm.sysmethods.simulationSystem.SimulationTable.Count];
             DataSet ds = new DataSet();
-            ds.Tables.Add("Beasy");
+            ds.Tables.Add("ServerBeasy");
             ds.Tables[0].Columns.Add("Time");
             ds.Tables[0].Columns.Add("Beasy");
             for(int i = 0; i < FrontForm.sysmethods.simulationSystem.SimulationTable.Count; i++)
@@ -50,10 +50,14 @@ namespace MultiQueueSimulation
                     {
                         ds.Tables[0].Rows.Add(i,0);
                     }
+                    else
+                    {
+                        ds.Tables[0].Rows.Add(i, 1);
+                    }
                 }
-                else {
-                    ds.Tables[0].Rows.Add(i,1);
-                }
+                else
+                    ds.Tables[0].Rows.Add(i, 0);
+
             }
             ServerBeasyChart.Series[0].XValueMember = "Time";
             ServerBeasyChart.Series[0].YValueMembers = "Beasy";
